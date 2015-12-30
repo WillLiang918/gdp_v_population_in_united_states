@@ -3,9 +3,9 @@ var outerHeight = 500;
 var innerWidth = outerWidth - 50;
 var innerHeight = outerHeight - 50;
 var rMin = 1;
-var rMax = 10;
-var xColumn = "POPESTIMATE2000";
-var yColumn = "GDP2000";
+var rMax = 5;
+var xColumn = "GDP2000";
+var yColumn = "LANDAREA";
 var rColumn = "POPESTIMATE2000";
 
 var svg = d3.select("body").append("svg")
@@ -15,10 +15,10 @@ var svg = d3.select("body").append("svg")
 var g = svg.append("g")
   .attr("transform", "translate(30, 30)");
 
-// var xScale = d3.scale.linear().range([0, outerWidth]);
-// var yScale = d3.scale.linear().range([outerHeight, 0]);
-var xScale = d3.scale.log().range([0, innerWidth]);
-var yScale = d3.scale.log().range([innerHeight, 0]);
+var xScale = d3.scale.log().range([0, outerWidth]);
+var yScale = d3.scale.log().range([outerHeight, 0]);
+// var xScale = d3.scale.log().range([0, innerWidth]);
+// var yScale = d3.scale.log().range([innerHeight, 0]);
 var rScale = d3.scale.sqrt().range([rMin, rMax]);
 
 function render(data) {
@@ -29,6 +29,8 @@ function render(data) {
 
   var circles = g.selectAll("circle").data(data);
   circles.enter().append("circle");
+
+  console.log(data);
 
   circles
     .attr("cx", function (d){ return xScale(d[xColumn]); })

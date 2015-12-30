@@ -3,10 +3,10 @@ var outerHeight = 500;
 var innerWidth = outerWidth - 50;
 var innerHeight = outerHeight - 50;
 var rMin = 1;
-var rMax = 10;
-var xColumn = "POPESTIMATE2000";
-var yColumn = "GDP2000";
-var rColumn = "POPESTIMATE2000";
+var rMax = 5;
+var xColumn = "GDP2009";
+var yColumn = "LANDAREA";
+var rColumn = "POPESTIMATE2009";
 
 var svg = d3.select("body").append("svg")
   .attr("width", outerWidth)
@@ -15,10 +15,10 @@ var svg = d3.select("body").append("svg")
 var g = svg.append("g")
   .attr("transform", "translate(30, 30)");
 
-// var xScale = d3.scale.linear().range([0, outerWidth]);
-// var yScale = d3.scale.linear().range([outerHeight, 0]);
-var xScale = d3.scale.log().range([0, innerWidth]);
-var yScale = d3.scale.log().range([innerHeight, 0]);
+var xScale = d3.scale.log().range([0, outerWidth]);
+var yScale = d3.scale.log().range([outerHeight, 0]);
+// var xScale = d3.scale.log().range([0, innerWidth]);
+// var yScale = d3.scale.log().range([innerHeight, 0]);
 var rScale = d3.scale.sqrt().range([rMin, rMax]);
 
 function render(data) {
@@ -55,7 +55,30 @@ function type(d){
 }
 
 d3.csv("population.csv", type, function (data) {
+  console.log("Inital Data", data);
+
+  var labelVar = "NAME";
+  var populationByYear = d3.keys(data[0]).slice(2, 12);
+  var gdpByYear = d3.keys(data[0]).slice(12, data.length);
+
+  var seriesData = populationByYear.map( function (name) {
+    var year = name.slice(11, name.length);
+    return {
+      year: year,
+      values: data.map( function (d){
+        return { label: d[labelVar],
+                 area: +d.LANDAREA,
+                 population: +d[name],
+                 gdp: +d["GDP" + year],
+               };
+      })
+    };
+  });
+
+  console.log("seriesData", seriesData);
+
   render(data);
+
   var people = rScale.domain()[1];
   var pixels = Math.PI * rMax * rMax;
   console.log((people / pixels) + " people per pixel.");
