@@ -23,23 +23,48 @@ var rScale = d3.scale.sqrt().range([rMin, rMax]);
 
 function render(data) {
 
-  xScale.domain(d3.extent(data, function (d){ return d[xColumn]; }));
-  yScale.domain(d3.extent(data, function (d){ return d[yColumn]; }));
-  rScale.domain([0, d3.max(data, function (d){ return d[rColumn]; })]);
+  // xScale.domain(d3.extent(data, function (d){ return d[xColumn]; }));
+  // yScale.domain(d3.extent(data, function (d){ return d[yColumn]; }));
 
-  var circles = g.selectAll("circle").data(data);
+  xScale.domain([
+    d3.min(data, function(year) {
+      return d3.min(year.values, function(states) { return states.gdp; });
+    }),
+    d3.max(data, function(year) {
+      return d3.max(year.values, function(states) { return states.gdp; });
+    })
+  ]);
+
+  yScale.domain([
+    d3.min(data, function(year) {
+      return d3.min(year.values, function(states) { return states.population; });
+    }),
+    d3.max(data, function(year) {
+      return d3.max(year.values, function(states) { return states.population; });
+    })
+  ]);
+
+  rScale.domain([ 0, d3.max(data[0].values, function(state) { return state.area; })]);
+
+  var dataset = [];
+  data.forEach(function(year){
+     year.values.forEach(function(something){
+      dataset.push(something);
+    });
+  });
+
+  var circles = g.selectAll("circle").data(dataset);
   circles.enter().append("circle");
 
   circles
-    .attr("cx", function (d){ return xScale(d[xColumn]); })
-    .attr("cy", function (d){ return yScale(d[yColumn]); })
-    .attr("r", function (d){ return rScale(d[rColumn]); })
+    .attr("cx", function (d){ return xScale(+d.gdp); })
+    .attr("cy", function (d){ return yScale(+d.population); })
+    .attr("r", function (d){ return rScale(+d.area); })
     .on('mouseover', function(d){
       d3.select(this)
       .attr("fill", "orange")
       .attr("class", "hover")
       .html(d.POPESTIMATE2009);
-
     })
     .on('mouseout', function(d){
       d3.select(this).attr("fill", "black");
@@ -77,7 +102,7 @@ d3.csv("population.csv", type, function (data) {
 
   console.log("seriesData", seriesData);
 
-  render(data);
+  render(seriesData);
 
   var people = rScale.domain()[1];
   var pixels = Math.PI * rMax * rMax;
