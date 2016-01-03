@@ -1,3 +1,22 @@
 body {
   font-size: 30px;
 }
+
+.year2000 {
+  fill: blue;
+}
+.year2002 {
+  fill: yellow;
+}
+.year2003 {
+  fill: pink;
+}
+.year2004 {
+  fill: red;
+}
+.year2005 {
+  fill: gold;
+}
+.year2009 {
+  fill: pink;
+}

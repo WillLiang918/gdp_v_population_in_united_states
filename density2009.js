@@ -1,12 +1,12 @@
 var outerWidth = 500;
 var outerHeight = 500;
-var innerWidth = outerWidth - 50;
-var innerHeight = outerHeight - 50;
+var innerWidth = outerWidth - 30 - 30;
+var innerHeight = outerHeight - 30 - 30;
 var rMin = 1;
 var rMax = 5;
-var xColumn = "GDP2009";
-var yColumn = "LANDAREA";
-var rColumn = "POPESTIMATE2009";
+var yColumn = "gdp";
+var xColumn = "population";
+var rColumn = "area";
 
 var svg = d3.select("body").append("svg")
   .attr("width", outerWidth)
@@ -15,10 +15,10 @@ var svg = d3.select("body").append("svg")
 var g = svg.append("g")
   .attr("transform", "translate(30, 30)");
 
-var xScale = d3.scale.log().range([0, outerWidth]);
-var yScale = d3.scale.log().range([outerHeight, 0]);
-// var xScale = d3.scale.log().range([0, innerWidth]);
-// var yScale = d3.scale.log().range([innerHeight, 0]);
+var xScale = d3.scale.log().range([0, innerWidth]);
+var yScale = d3.scale.log().range([innerHeight, 0]);
+// var xScale = d3.scale.linear().range([0, innerWidth]);
+// var yScale = d3.scale.linear().range([outerHeight, 0]);
 var rScale = d3.scale.sqrt().range([rMin, rMax]);
 
 function render(data) {
@@ -28,23 +28,23 @@ function render(data) {
 
   xScale.domain([
     d3.min(data, function(year) {
-      return d3.min(year.values, function(states) { return states.gdp; });
+      return d3.min(year.values, function(states) { return states[xColumn]; });
     }),
     d3.max(data, function(year) {
-      return d3.max(year.values, function(states) { return states.gdp; });
+      return d3.max(year.values, function(states) { return states[xColumn]; });
     })
   ]);
 
   yScale.domain([
     d3.min(data, function(year) {
-      return d3.min(year.values, function(states) { return states.population; });
+      return d3.min(year.values, function(states) { return states[yColumn]; });
     }),
     d3.max(data, function(year) {
-      return d3.max(year.values, function(states) { return states.population; });
+      return d3.max(year.values, function(states) { return states[yColumn]; });
     })
   ]);
 
-  rScale.domain([ 0, d3.max(data[0].values, function(state) { return state.area; })]);
+  rScale.domain([ 0, d3.max(data[0].values, function(state) { return state[rColumn]; })]);
 
   var dataset = [];
   data.forEach(function(year){
@@ -57,18 +57,20 @@ function render(data) {
   circles.enter().append("circle");
 
   circles
-    .attr("cx", function (d){ return xScale(+d.gdp); })
-    .attr("cy", function (d){ return yScale(+d.population); })
-    .attr("r", function (d){ return rScale(+d.area); })
-    .on('mouseover', function(d){
-      d3.select(this)
-      .attr("fill", "orange")
-      .attr("class", "hover")
-      .html(d.POPESTIMATE2009);
-    })
-    .on('mouseout', function(d){
-      d3.select(this).attr("fill", "black");
-    });
+    .attr("cx", function (d){ return xScale(+d[xColumn]); })
+    .attr("cy", function (d){ return yScale(+d[yColumn]); })
+    .attr("r", function (d){ return rScale( +( d[rColumn] / d[yColumn] ) ); })
+    .attr("r", 2)
+    .attr("class", function (d) { return d.year + " " + d.label; });
+    // .on('mouseover', function(d){
+    //   d3.select(this)
+    //   .attr("fill", "orange")
+    //   .attr("class", "hover")
+    //   .html(d.POPESTIMATE2009);
+    // })
+    // .on('mouseout', function(d){
+    //   d3.select(this).attr("fill", "black");
+    // });
 
   circles.exit().remove();
 }
@@ -91,7 +93,8 @@ d3.csv("population.csv", type, function (data) {
     return {
       year: year,
       values: data.map( function (d){
-        return { label: d[labelVar],
+        return { year: "year" + year,
+                 label: d[labelVar],
                  area: +d.LANDAREA,
                  population: +d[name],
                  gdp: +d["GDP" + year],
